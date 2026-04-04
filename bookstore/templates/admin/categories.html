@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Manage Categories</h2>
+<div class="card">
+    <form method="POST" style="max-width: 100%; margin: 0; box-shadow: none; display: flex; gap: 10px; align-items: end;">
+        <input type="hidden" name="action" value="add">
+        <div style="flex-grow: 1;">
+            <label>New Category Name:</label>
+            <input type="text" name="name" required style="margin-bottom: 0;">
+        </div>
+        <button type="submit" class="btn">Add Category</button>
+    </form>
+</div>
+
+<div class="card">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in categories %}
+            <tr>
+                <td>{{ c.category_id }}</td>
+                <td>{{ c.name }}</td>
+                <td>
+                    <form method="POST" style="margin: 0; padding: 0; box-shadow: none; background: none;">
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="category_id" value="{{ c.category_id }}">
+                        <button type="submit" class="btn btn-red" style="padding: 5px 10px; font-size: 0.9em;" onclick="return confirm('Delete this category?')">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

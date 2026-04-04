@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="hero">
+    <div>
+        <h1>Welcome to The Book Shop</h1>
+        <p>Discover your next great read today.</p>
+    </div>
+</div>
+
+<div class="card" style="display: flex; gap: 20px; align-items: center; justify-content: space-between;">
+    <h1>Available Books</h1>
+    <form method="GET" action="{{ url_for('home') }}" style="display: flex; gap: 10px; margin: 0; box-shadow: none; padding: 0;">
+        <select name="category_id">
+            <option value="">All Categories</option>
+            {% for cat in categories %}
+                <option value="{{ cat.category_id }}" {% if request.args.get('category_id') == cat.category_id|string %}selected{% endif %}>{{ cat.name }}</option>
+            {% endfor %}
+        </select>
+        <input type="text" name="search" placeholder="Search by title..." value="{{ request.args.get('search', '') }}">
+        <button type="submit" class="btn">Filter</button>
+    </form>
+</div>
+
+<div class="grid">
+    {% for book in books %}
+    <div class="card">
+        <h3>{{ book.title }}</h3>
+        <p><strong>Author(s):</strong> {{ book.author_names or 'Unknown' }}</p>
+        <p><strong>Category:</strong> {{ book.category_name }}</p>
+        <p><strong>Price:</strong> ₹{{ book.price }}</p>
+        <div style="display: flex; gap: 10px;">
+            <a href="{{ url_for('book_detail', isbn=book.ISBN) }}" class="btn">Details</a>
+            <form method="POST" action="{{ url_for('add_to_cart', isbn=book.ISBN) }}" style="box-shadow:none; padding:0; margin:0;">
+                <button type="submit" class="btn">Add to Cart</button>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <p>No books found.</p>
+    {% endfor %}
+</div>
+{% endblock %}

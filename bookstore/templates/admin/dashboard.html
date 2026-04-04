@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="sub-hero" style="background: white; margin-top: 20px;">
+    <h2>Admin Dashboard</h2>
+    <p>System Overview & Insights</p>
+</div>
+
+<div class="grid" style="margin-bottom: 40px;">
+    <div class="admin-card light-glow">
+        <h3>Total Books</h3>
+        <h2>📚 {{ books }}</h2>
+    </div>
+    <div class="admin-card light-glow">
+        <h3>Registrations</h3>
+        <h2>👥 {{ customers }}</h2>
+    </div>
+    <div class="admin-card light-glow">
+        <h3>Orders Processed</h3>
+        <h2>📦 {{ orders }}</h2>
+    </div>
+    <div class="admin-card light-glow">
+        <h3>Gross Revenue</h3>
+        <h2>💰 ₹{{ revenue }}</h2>
+    </div>
+</div>
+
+<div class="two-col">
+    <div class="card col-main">
+        <h3>Quick Actions</h3>
+        <p>Manage the database efficiently using the portal tools.</p>
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <a href="{{ url_for('admin_books') }}" class="btn">Manage Books</a>
+            <a href="{{ url_for('admin_orders') }}" class="btn" style="background:var(--dark)">View Latest Orders</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

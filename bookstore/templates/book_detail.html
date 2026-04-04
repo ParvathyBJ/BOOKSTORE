@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="two-col" style="margin-top: 30px;">
+    <!-- LEFT BOOK DETAILS -->
+    <div class="card col-main" style="display: flex; flex-direction: column; justify-content: center;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <h1 style="font-size: 2.8em; margin-bottom: 10px; background: linear-gradient(to right, var(--dark), var(--primary));background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;">{{ book.title }}</h1>
+            <span style="background: #f1f5f9; padding: 5px 12px; border-radius: 20px; font-weight: bold; color: var(--primary); font-size: 0.9em;">📂 {{ book.category_name }}</span>
+        </div>
+        
+        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 20px;">
+            <span style="font-size: 1.5em; color: #fbbf24;">★</span>
+            <strong style="font-size: 1.2em;">{{ avg_rating }} / 5.0</strong>
+            <span style="color: #64748b;">({{ reviews|length }} reviews)</span>
+        </div>
+
+        <p style="font-size: 2.2em; font-weight: 800; color: var(--primary); margin: 10px 0;">₹{{ book.price }}</p>
+        
+        <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin: 20px 0; border: 1px solid var(--border);">
+            <h4 style="margin-top: 0; color: #64748b; text-transform: uppercase; font-size: 0.85em; letter-spacing: 1px;">Author(s)</h4>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                {% for author in authors %}
+                    <span style="background: white; padding: 6px 14px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-weight: 600;">✍️ {{ author.name }}</span>
+                {% else %}
+                    <span style="color: #64748b;">No authors listed</span>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <form method="POST" action="{{ url_for('add_to_cart', isbn=book.ISBN) }}" style="box-shadow:none; padding:20px; background: white; border: 2px dashed var(--border); border-radius: 12px; max-width: 100%; margin: 20px 0 0;">
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <input type="number" name="quantity" value="1" min="1" style="width: 100px; margin: 0; font-size: 1.2em; text-align: center; padding: 12px;">
+                <button type="submit" class="btn" style="flex-grow: 1; font-size: 1.2em; padding: 14px;">Add to Cart 🛒</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- RIGHT REVIEWS SECTION -->
+    <div class="col-side" style="display: flex; flex-direction: column; gap: 25px;">
+        <div class="card" style="margin: 0;">
+            <h3>Leave a Review 📝</h3>
+            {% if session.get('customer_id') %}
+            <form method="POST" style="box-shadow: none; padding: 0; background: transparent; border: none; margin: 0; max-width: 100%;">
+                <label style="font-weight: 600;">Rating</label>
+                <select name="rating" required style="padding: 10px;">
+                    <option value="5">⭐⭐⭐⭐⭐ 5 - Excellent</option>
+                    <option value="4">⭐⭐⭐⭐ 4 - Good</option>
+                    <option value="3">⭐⭐⭐ 3 - Average</option>
+                    <option value="2">⭐⭐ 2 - Poor</option>
+                    <option value="1">⭐ 1 - Terrible</option>
+                </select>
+                
+                <label style="font-weight: 600;">Your Thoughts</label>
+                <textarea name="review_text" required rows="3" placeholder="What did you think of the book?"></textarea>
+                
+                <button type="submit" class="btn" style="width: 100%;">Post Review</button>
+            </form>
+            {% else %}
+            <div style="background: #f8fafc; padding: 20px; border-radius: 8px; text-align: center; border: 1px dashed var(--border);">
+                <p style="margin-bottom: 15px;">You must be logged in to review.</p>
+                <a href="{{ url_for('login') }}" class="btn">Login Now</a>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="card" style="margin: 0; flex-grow: 1; overflow-y: auto; max-height: 500px;">
+            <h3>Community Reviews ({{ reviews|length }})</h3>
+            {% for r in reviews %}
+            <div style="padding-bottom: 15px; margin-bottom: 15px; border-bottom: 1px solid var(--border);">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px;">
+                    <strong style="color: var(--dark);">{{ r.customer_name }}</strong>
+                    <span style="color: #fbbf24;">{{ '★' * r.rating }}{{ '☆' * (5 - r.rating) }}</span>
+                </div>
+                <p style="margin: 0; color: #475569; font-size: 0.95em;">{{ r.review_text }}</p>
+                <small style="color: #94a3b8; display: block; margin-top: 5px;">{{ r.created_at.strftime('%Y-%m-%d') if r.created_at else '' }}</small>
+            </div>
+            {% else %}
+            <p style="color: #64748b; text-align: center; margin-top: 30px;">There are no reviews for this book yet. Be the first!</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

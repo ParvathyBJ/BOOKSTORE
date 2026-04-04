@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>All Orders</h2>
+<div class="card">
+    <table>
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Date</th>
+                <th>Customer Name</th>
+                <th>Total Amount</th>
+                <th>Payment</th>
+                <th>Shipping Address</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for o in orders %}
+            <tr>
+                <td>{{ o.order_id }}</td>
+                <td>{{ o.order_date }}</td>
+                <td>{{ o.customer_name }}</td>
+                <td>₹{{ o.amount }}</td>
+                <td>{{ o.payment_method }}</td>
+                <td>{{ o.address }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

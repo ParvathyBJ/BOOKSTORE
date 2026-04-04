@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="sub-hero">
+    <h2>📦 My Order History</h2>
+    <p>Track and view all your past transactions.</p>
+</div>
+
+<div class="grid">
+    {% for order in orders %}
+    <div class="card" style="border-top: 4px solid var(--primary); display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+            <div>
+                <h3 style="margin: 0;">Order Date: {{ order.order_date }}</h3>
+                <span style="font-size: 0.85em; color: #64748b; font-family: monospace; background: #f1f5f9; padding: 3px 8px; border-radius: 4px; display: inline-block; margin-top: 5px;">ID: ORD-{{ '%05d' | format(order.order_id) }}</span>
+            </div>
+            <h3 style="margin: 0; color: var(--primary);">₹{{ order.amount }}</h3>
+        </div>
+        
+        <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 15px; flex-grow: 1;">
+            <h4 style="margin-top: 0; font-size: 0.9em; text-transform: uppercase; color: #64748b; margin-bottom: 10px;">Items Purchased:</h4>
+            <ul style="margin: 0; padding-left: 20px;">
+                {% for item in order['items'] %}
+                <li style="margin-bottom: 5px;"><strong>{{ item.title }}</strong> <span style="color:#64748b;">(x{{ item.quantity }})</span> - ₹{{ item.price }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        
+        <div style="font-size: 0.9em; color: #475569;">
+            <p style="margin: 5px 0;"><strong>💳 Payment:</strong> {{ order.payment_method }}</p>
+            <p style="margin: 5px 0;"><strong>📍 Shipping To:</strong> {{ order.address }}</p>
+        </div>
+    </div>
+    {% else %}
+    <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 50px;">
+        <h2>No orders found.</h2>
+        <a href="{{ url_for('home') }}" class="btn" style="margin-top: 15px;">Start Shopping</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

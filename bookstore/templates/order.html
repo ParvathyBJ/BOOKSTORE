@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <h2>Checkout Summary</h2>
+    
+    <h3>Order Items</h3>
+    <ul>
+        {% for b in books %}
+        <li>{{ b.title }} (x{{ cart[b.ISBN] }}) - ₹{{ (b.price|float) * cart[b.ISBN] }}</li>
+        {% endfor %}
+    </ul>
+    <h3>Total Amount: ₹{{ total_amount }}</h3>
+
+    <hr style="margin: 20px 0;">
+    
+    <form method="POST" style="max-width: 800px; margin: 0; box-shadow: none;">
+        <h3>Shipping Details</h3>
+        <label>Shipping Address:</label>
+        <textarea name="address" required rows="3" placeholder="Enter full shipping address"></textarea>
+        
+        <p style="background: #e2e8f0; padding: 10px; border-radius: 4px; margin-top: 20px;">
+            <strong>Note:</strong> Currently, only <strong>Cash on Delivery (COD)</strong> is accepted for all orders.
+        </p>
+
+        <button type="submit" class="btn" style="margin-top: 15px; width: 100%;">Confirm & Place Order</button>
+    </form>
+</div>
+{% endblock %}
