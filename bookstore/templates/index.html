@@ -30,11 +30,16 @@
         <p><strong>Author(s):</strong> {{ book.author_names or 'Unknown' }}</p>
         <p><strong>Category:</strong> {{ book.category_name }}</p>
         <p><strong>Price:</strong> ₹{{ book.price }}</p>
+        <p><strong>Stock:</strong> {{ book.stock }} copies available</p>
         <div style="display: flex; gap: 10px;">
             <a href="{{ url_for('book_detail', isbn=book.ISBN) }}" class="btn">Details</a>
+            {% if book.stock > 0 %}
             <form method="POST" action="{{ url_for('add_to_cart', isbn=book.ISBN) }}" style="box-shadow:none; padding:0; margin:0;">
                 <button type="submit" class="btn">Add to Cart</button>
             </form>
+            {% else %}
+            <button class="btn" style="background-color: #94a3b8; cursor: not-allowed;" disabled>Out of Stock</button>
+            {% endif %}
         </div>
     </div>
     {% else %}

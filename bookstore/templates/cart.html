@@ -24,7 +24,7 @@
                 <td>₹{{ item.price }}</td>
                 <td>
                     <form method="POST" action="{{ url_for('update_cart', isbn=item.ISBN) }}" style="box-shadow:none; padding:0; margin:0; display:flex; gap:5px; background: transparent;">
-                        <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="99" style="width: 70px; margin: 0; padding: 8px;">
+                        <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="{{ item.stock }}" style="width: 70px; margin: 0; padding: 8px;">
                         <button type="submit" class="btn" style="padding: 8px 12px; font-size: 0.9em;">Update 🔄</button>
                     </form>
                 </td>

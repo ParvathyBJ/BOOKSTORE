@@ -15,7 +15,7 @@ def home():
     cursor = conn.cursor(dictionary=True)
     
     query = """
-        SELECT b.ISBN, b.title, b.price, c.name as category_name, 
+        SELECT b.ISBN, b.title, b.price, b.stock, c.name as category_name, 
         GROUP_CONCAT(a.name SEPARATOR ', ') as author_names
         FROM BOOK b
         LEFT JOIN CATEGORY c ON b.category_id = c.category_id
@@ -93,7 +93,7 @@ def book_detail(isbn):
     conn = db_mysql.get_mysql_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("""
-        SELECT b.ISBN, b.title, b.price, c.name as category_name
+        SELECT b.ISBN, b.title, b.price, b.stock, c.name as category_name
         FROM BOOK b
         LEFT JOIN CATEGORY c ON b.category_id = c.category_id
         WHERE b.ISBN = %s
@@ -148,7 +148,7 @@ def view_cart():
         conn = db_mysql.get_mysql_connection()
         cursor = conn.cursor(dictionary=True)
         format_strings = ','.join(['%s'] * len(cart))
-        cursor.execute(f"SELECT ISBN, title, price FROM BOOK WHERE ISBN IN ({format_strings})", tuple(cart.keys()))
+        cursor.execute(f"SELECT ISBN, title, price, stock FROM BOOK WHERE ISBN IN ({format_strings})", tuple(cart.keys()))
         books = cursor.fetchall()
         conn.close()
         
@@ -169,9 +169,24 @@ def add_to_cart(isbn):
         
     cart = session.get('cart', {})
     qty = int(request.form.get('quantity', 1))
-    cart[isbn] = cart.get(isbn, 0) + qty
-    session['cart'] = cart
-    flash("Added to cart!")
+    
+    conn = db_mysql.get_mysql_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT stock FROM BOOK WHERE ISBN = %s", (isbn,))
+    book = cursor.fetchone()
+    conn.close()
+    
+    if book:
+        current_qty = cart.get(isbn, 0)
+        if current_qty + qty > book['stock']:
+            flash(f"Cannot add {qty} more. Only {book['stock']} left in stock.")
+        else:
+            cart[isbn] = current_qty + qty
+            session['cart'] = cart
+            flash("Added to cart!")
+    else:
+        flash("Book not found.")
+        
     return redirect(request.referrer or url_for('home'))
 
 @app.route('/cart/remove/<isbn>', methods=['POST'])
@@ -196,9 +211,17 @@ def update_cart(isbn):
         try:
             qty = int(request.form.get('quantity', 1))
             if qty > 0:
-                cart[isbn] = qty
-                session['cart'] = cart
-                flash("Cart updated.")
+                conn = db_mysql.get_mysql_connection()
+                cursor = conn.cursor(dictionary=True)
+                cursor.execute("SELECT stock FROM BOOK WHERE ISBN = %s", (isbn,))
+                book = cursor.fetchone()
+                conn.close()
+                if book and qty > book['stock']:
+                    flash(f"Cannot update quantity to {qty}. Only {book['stock']} left in stock.")
+                else:
+                    cart[isbn] = qty
+                    session['cart'] = cart
+                    flash("Cart updated.")
             else:
                 del cart[isbn]
                 session['cart'] = cart
@@ -221,8 +244,15 @@ def order():
     cursor = conn.cursor(dictionary=True)
     
     format_strings = ','.join(['%s'] * len(cart))
-    cursor.execute(f"SELECT ISBN, title, price FROM BOOK WHERE ISBN IN ({format_strings})", tuple(cart.keys()))
+    cursor.execute(f"SELECT ISBN, title, price, stock FROM BOOK WHERE ISBN IN ({format_strings})", tuple(cart.keys()))
     books = cursor.fetchall()
+    
+    # Verify stock sufficiency before showing checkout or placing order
+    for b in books:
+        if cart[b['ISBN']] > b['stock']:
+            flash(f"Sorry, '{b['title']}' only has {b['stock']} copies available. Please update your cart.")
+            conn.close()
+            return redirect(url_for('view_cart'))
     
     total_amount = sum(float(b['price']) * cart[b['ISBN']] for b in books)
     
@@ -341,12 +371,13 @@ def admin_books():
             isbn = request.form['isbn']
             title = request.form['title']
             price = request.form['price']
+            stock = request.form['stock']
             category_id = request.form['category_id']
             author_ids = request.form.getlist('author_ids')
             
             try:
-                cursor.execute("INSERT INTO BOOK (ISBN, title, price, category_id) VALUES (%s, %s, %s, %s)",
-                               (isbn, title, price, category_id))
+                cursor.execute("INSERT INTO BOOK (ISBN, title, price, stock, category_id) VALUES (%s, %s, %s, %s, %s)",
+                               (isbn, title, price, stock, category_id))
                 for aid in author_ids:
                     cursor.execute("INSERT INTO BOOK_AUTHOR (ISBN, author_id) VALUES (%s, %s)", (isbn, aid))
                 conn.commit()
@@ -365,7 +396,7 @@ def admin_books():
                 flash("Error deleting book: " + str(e))
     
     cursor.execute("""
-        SELECT b.ISBN, b.title, b.price, c.name as category_name
+        SELECT b.ISBN, b.title, b.price, b.stock, c.name as category_name
         FROM BOOK b LEFT JOIN CATEGORY c ON b.category_id = c.category_id
     """)
     books = cursor.fetchall()
@@ -388,12 +419,13 @@ def admin_books_edit(isbn):
     if request.method == 'POST':
         title = request.form['title']
         price = request.form['price']
+        stock = request.form['stock']
         category_id = request.form['category_id']
         author_ids = request.form.getlist('author_ids')
         
         try:
-            cursor.execute("UPDATE BOOK SET title = %s, price = %s, category_id = %s WHERE ISBN = %s",
-                           (title, price, category_id, isbn))
+            cursor.execute("UPDATE BOOK SET title = %s, price = %s, stock = %s, category_id = %s WHERE ISBN = %s",
+                           (title, price, stock, category_id, isbn))
             cursor.execute("DELETE FROM BOOK_AUTHOR WHERE ISBN = %s", (isbn,))
             for aid in author_ids:
                 cursor.execute("INSERT INTO BOOK_AUTHOR (ISBN, author_id) VALUES (%s, %s)", (isbn, aid))

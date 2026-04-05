@@ -15,6 +15,9 @@
         </div>
 
         <p style="font-size: 2.2em; font-weight: 800; color: var(--primary); margin: 10px 0;">₹{{ book.price }}</p>
+        <p style="font-size: 1.1em; color: {% if book.stock > 0 %}#16a34a{% else %}#dc2626{% endif %}; font-weight: bold; margin-top: 0;">
+            {% if book.stock > 0 %}In Stock: {{ book.stock }} available{% else %}Out of Stock{% endif %}
+        </p>
         
         <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin: 20px 0; border: 1px solid var(--border);">
             <h4 style="margin-top: 0; color: #64748b; text-transform: uppercase; font-size: 0.85em; letter-spacing: 1px;">Author(s)</h4>
@@ -27,12 +30,19 @@
             </div>
         </div>
         
+        {% if book.stock > 0 %}
         <form method="POST" action="{{ url_for('add_to_cart', isbn=book.ISBN) }}" style="box-shadow:none; padding:20px; background: white; border: 2px dashed var(--border); border-radius: 12px; max-width: 100%; margin: 20px 0 0;">
             <div style="display: flex; gap: 15px; align-items: center;">
-                <input type="number" name="quantity" value="1" min="1" style="width: 100px; margin: 0; font-size: 1.2em; text-align: center; padding: 12px;">
+                <input type="number" name="quantity" value="1" min="1" max="{{ book.stock }}" style="width: 100px; margin: 0; font-size: 1.2em; text-align: center; padding: 12px;">
                 <button type="submit" class="btn" style="flex-grow: 1; font-size: 1.2em; padding: 14px;">Add to Cart 🛒</button>
             </div>
         </form>
+        {% else %}
+        <div style="box-shadow:none; padding:20px; background: #fee2e2; border: 2px dashed #ef4444; border-radius: 12px; max-width: 100%; margin: 20px 0 0; text-align: center;">
+            <h3 style="color: #b91c1c; margin: 0; font-size: 1.5em;">Out of Stock</h3>
+            <p style="color: #7f1d1d; margin-top: 10px;">This item is currently unavailable.</p>
+        </div>
+        {% endif %}
     </div>
 
     <!-- RIGHT REVIEWS SECTION -->

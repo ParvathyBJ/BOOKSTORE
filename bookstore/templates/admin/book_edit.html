@@ -12,6 +12,9 @@
         <label>Price:</label>
         <input type="number" step="0.01" name="price" value="{{ book.price }}" required>
         
+        <label>Stock:</label>
+        <input type="number" name="stock" value="{{ book.stock }}" min="0" required>
+        
         <label>Category:</label>
         <select name="category_id" required>
             {% for cat in categories %}

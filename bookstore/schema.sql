@@ -15,6 +15,7 @@ CREATE TABLE BOOK (
     ISBN VARCHAR(20) PRIMARY KEY,
     title VARCHAR(200) NOT NULL,
     price DECIMAL(10,2) NOT NULL,
+    stock INT NOT NULL DEFAULT 10,
     category_id INT,
     FOREIGN KEY (category_id) REFERENCES CATEGORY(category_id) ON DELETE SET NULL
 );
@@ -105,3 +106,13 @@ INSERT INTO PAYMENT (amount, payment_method, order_id) VALUES
 INSERT INTO SHIPPINGADDRESS (address, order_id) VALUES
 ('Flat 42, Bangalore, India', 1),
 ('Building 301, Mumbai, India', 2);
+
+-- Trigger to update stock on checkout
+DELIMITER //
+CREATE TRIGGER update_stock_after_order
+AFTER INSERT ON ORDERITEM
+FOR EACH ROW
+BEGIN
+    UPDATE BOOK SET stock = stock - NEW.quantity WHERE ISBN = NEW.ISBN;
+END //
+DELIMITER ;
